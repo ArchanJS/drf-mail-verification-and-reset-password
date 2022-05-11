@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
+from datetime import timedelta
 from decouple import config
 from pathlib import Path
 
@@ -116,7 +117,14 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+# Authentication backend
+AUTHENTICATION_BACKENDS = ['apis.auth_backends.EmailBackend']
 
+SIMPLE_JWT={
+    'ACCESS_TOKEN_LIFETIME':timedelta(weeks=4),
+    'ROTATE_REFRESH_TOKENS':True
+    # If we make ROTATE_REFRESH_TOKEN:True, we will get both the access and refresh token while obtaining access token using refresh token
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

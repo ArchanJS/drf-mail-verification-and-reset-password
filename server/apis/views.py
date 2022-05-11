@@ -4,11 +4,17 @@ from rest_framework import generics
 from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.views import APIView
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
 import io
 from rest_framework.parsers import JSONParser
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer,UserLoginSerializer,TokenObtainPairSerializer
 from .utils import *
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
@@ -38,3 +44,24 @@ def verifyUser(request):
     except Exception as e:
         print(e)
         return JsonResponse({'error':'Something went wrong!'},status=status.HTTP_400_BAD_REQUEST)
+
+# User login
+class UserLoginView(APIView):
+    def post(self,request,format=None):
+        serializer=UserLoginSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            email=serializer.data['email']
+            password=serializer.data['password']
+            user=User.objects.get(email=request.data['email'])
+            token=Token.objects.get_or_create(user=user)
+
+# Generate token
+class EmailTokenObtainPairView(TokenObtainPairView):
+    serializer_class = TokenObtainPairSerializer
+
+# Update user
+class GetOrUpdateUser(generics.RetrieveUpdateAPIView):
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+    authentication_classes=[JWTAuthentication]
+    permission_classes=[IsAuthenticated]
